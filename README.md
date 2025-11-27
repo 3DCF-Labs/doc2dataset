@@ -93,7 +93,7 @@ doc2dataset --help
   examples/, recipes/       # integration examples and recipes
 ```
 
-> Note: `eval/` is intended to be populated from a GitHub Release archive (e.g., `3dcf-eval-v0.1.tar.gz`) and should be added to your `.gitignore` to avoid committing large binary artifacts.
+> Note: `eval/` is intended to be populated from a GitHub Release archive (e.g., `3dcf-eval-v0.1.tar.gz`)
 
 ## doc2dataset in practice
 
