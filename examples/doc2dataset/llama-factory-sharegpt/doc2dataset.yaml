@@ -1,0 +1,18 @@
+dataset_root: ./datasets/handbook
+
+sources:
+  - path: ./handbook
+    pattern: "*.md"
+
+tasks:
+  - qa
+
+ingest:
+  preset: reports
+  enable_ocr: false
+  force_ocr: false
+  ocr_langs: ["eng"]
+
+exports:
+  llama_factory:
+    format: sharegpt

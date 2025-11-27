@@ -1,0 +1,19 @@
+dataset_root: ./datasets/company
+
+sources:
+  - path: ./docs
+    pattern: "*.pdf,*.md"
+
+tasks:
+  - qa
+  - summary
+
+ingest:
+  preset: reports
+  enable_ocr: false
+  force_ocr: false
+  ocr_langs: ["eng"]
+
+exports:
+  openai: true
+  rag_jsonl: true

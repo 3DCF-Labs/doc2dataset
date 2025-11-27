@@ -1,0 +1,20 @@
+dataset_root: ./datasets/policies
+
+sources:
+  - path: ./policies
+    pattern: "*.pdf"
+
+tasks:
+  - qa
+  - summary
+
+ingest:
+  preset: reports
+  enable_ocr: true
+  force_ocr: false
+  ocr_langs: ["eng", "spa"]
+
+exports:
+  axolotl:
+    mode: chat
+  rag_jsonl: true
