@@ -244,9 +244,9 @@ The index lives under `dataset_root/index/`:
   "page_number": 1,
   "approx_tokens": 512,
   "meta": {
-    "width": 595.0,
-    "height": 842.0,
-    "rotation": 0
+    "width_px": 595,
+    "height_px": 842,
+    "z": 0
   }
 }
 ```
@@ -258,19 +258,13 @@ The index lives under `dataset_root/index/`:
   "cell_id": "string",
   "doc_id": "string",
   "page_id": "string",
-  "kind": "text",             // text | heading | table | list | code | footer | ...
+  "kind": "text",             // text | heading | table | figure | footer
   "text": "string",
   "importance": 0.83,
-  "bbox": [0.12, 0.25, 0.90, 0.33],
-  "numguard": {
-    "numbers": [
-      { "value": "12.5", "hash": "4b2f..." }
-    ],
-    "ok": true
-  },
+  "bbox": [64.0, 128.0, 960.0, 152.0],  // pixel coordinates [x0, y0, x1, y1]
+  "numguard": null,           // stored separately in Document.numguards
   "meta": {
-    "heading_level": 2,
-    "section": "Limits by category"
+    "rle": 0
   }
 }
 ```
@@ -297,7 +291,7 @@ Design choices:
 - `kind` values capture what downstream tasks often care about:
   - `heading`: used to define sections,
   - `table`: often numerically heavy and important,
-  - `list`, `code`, `footer`, etc.
+  - `figure`, `footer`, etc.
 
 Heuristics for grouping and kind assignment are preset-specific and can be tuned per domain.
 
@@ -336,7 +330,6 @@ Assess whether macro-cells align with human-perceived “units” (paragraphs, s
 
 Table 2 shows that macro-cells reach near-perfect coverage on the GDPR and ECB pages (1.0/1.0) and high coverage on OpenAPI and NASDAQ pages (0.85–0.92), demonstrating consistent structure capture across document types.
 
-```markdown
 <!-- RESULTS-TABLE: macrocell_human -->
 | Doc (human GT) | Segments | Cells | Segment coverage | Heading coverage | Cell alignment |
 |----------------|----------|-------|------------------|------------------|----------------|
@@ -348,11 +341,9 @@ Table 2 shows that macro-cells reach near-perfect coverage on the GDPR and ECB p
 | OpenAPI NDR v1.0 (page 1) | 13 | 1,848 | 0.85 | 0.86 | 0.0060 |
 | NASDAQ_MSFT_2023 (shareholder letter) | 12 | 5,206 | 0.92 | 1.00 | 0.0021 |
 <!-- END RESULTS-TABLE: macrocell_human -->
-```
 
 Low cell-alignment values reflect the expected difference between fine-grained macro-cells and the coarse human segments.
 
-```markdown
 <!-- RESULTS-TABLE: macrocell_heuristic -->
 | Doc (heuristic) | Segments | Cells | Segment coverage | Heading coverage | Table coverage | Cell alignment |
 |-----------------|----------|-------|------------------|------------------|----------------|----------------|
@@ -364,7 +355,6 @@ Low cell-alignment values reflect the expected difference between fine-grained m
 | correct.pdf     | 5  | 1  | 0.00 | 0.00 | 0.00 | 0.00 |
 | errors.pdf      | 5  | 1  | 0.00 | 0.00 | 0.00 | 0.00 |
 <!-- END RESULTS-TABLE: macrocell_heuristic -->
-```
 
 This second table is intentionally labelled “agreement with pdfminer heuristic” to
 separate it from human GT. Layout-rich PDFs such as `boxes.pdf` score higher, and
@@ -375,7 +365,7 @@ the bottleneck rather than 3DCF.
 
 ### 4.3 NumGuard: Numeric Integrity
 
-As introduced in Section 4.1.3, NumGuard records numeric values per cell and attaches a hash/checksum. To test integrity:
+NumGuard records are stored separately in the Document structure (not inline in each CellRecord). Each guard contains coordinates `(z, x, y)`, extracted units, and a SHA-1 hash of the numeric digits. To test integrity:
 
 - When 3DCF is re-encoded, or downstream transformations occur, NumGuard can be re-computed and compared.
 - For training datasets, NumGuard metadata can be propagated or used to filter examples where numeric values drift.
@@ -421,36 +411,30 @@ Quantify how well NumGuard detects numeric errors introduced by parsers or LLMs,
    - ingest → generate summary via LLM → attempt to re-extract numbers,
    - compare with original NumGuard to measure drift.
 
-```markdown
 <!-- RESULTS-TABLE: numguard_coverage -->
 | Corpus | Guards | A: unique | B: ambiguous | Unmatched | Cell numbers without guard | Baseline misses |
 |--------|--------|-----------|--------------|-----------|----------------------------|-----------------|
 | Financial (5 reports) | 18,501 | 9,359 (50.6%) | 0 | 9,142 | 1,197 | 3 |
 | Synthetic numeric fixtures | 37 | 29 (78.4%) | 0 | 8 | 7 | 0 |
 <!-- END RESULTS-TABLE: numguard_coverage -->
-```
 
 The coverage breakdown shows that around half of all extracted numbers in the five financial reports fall into the strictly guarded A-bucket (50.6 %), with zero ambiguous mappings (B), a moderate pool of cell-level numbers awaiting guards (C), and only three digits that never reach the ingest layer (D). On the synthetic numeric fixtures, NumGuard covers 78.4 % of numbers strictly and detects every injected corruption in the A-bucket.
 
-```markdown
 <!-- RESULTS-TABLE: numguard_detection -->
 | Corpus | Trials | Detection recall |
 |--------|--------|------------------|
 | Financial | 9,359 | 1.0 |
 | Synthetic numeric | 29 | 1.0 |
 <!-- END RESULTS-TABLE: numguard_detection -->
-```
 
 Both real and synthetic corpora achieve perfect detection recall = 1.0 on all A-bucket corruptions, confirming that NumGuard flags every numeric change introduced downstream.
 
-```markdown
 <!-- RESULTS-TABLE: numguard_drift -->
 | Sample type | Numeric answers | Preserved | Preservation rate |
 |-------------|-----------------|-----------|-------------------|
 | QA (doc2dataset-generated) | 9 | 9 | 1.00 |
 | Summaries | 10 | 9 | 0.90 |
 <!-- END RESULTS-TABLE: numguard_drift -->
-```
 
 The combined corpus now includes QA and summary prompts with explicit numeric answers. NumGuard preserved every QA number and 90% of the summary numbers in this sweep; alignment still relies on bbox-to-cell heuristics, so deterministic mappings are verified via SHA-1 comparisons.
 
@@ -516,7 +500,6 @@ Measure token savings and evaluate whether 3DCF’s compression preserves the in
 **Nov 2025 eval sweep summary**  
 The latest eval sweep (timestamped `eval/results/2025-11-22`) reran doc2dataset across every corpus with the real OpenAI backend (`DOC2DATASET_PROVIDER=openai`, `DOC2DATASET_MODEL=gpt-4.1-mini`) and a conservative throttle (`DOC2DATASET_THROTTLE_MS=900`) to stay within rate limits. The table below enumerates how many documents and QA/Summary samples each corpus produced; `multi` only exercises QA by design. The synthetic run now includes the former edge cases (`icdar-2019.bbl`, `icdar-2019.tex`, etc.) via the conversion layer; only raster-only fixtures such as `xml.png` remain disabled unless OCR dependencies are available.
 
-```markdown
 <!-- RESULTS-TABLE: corpus_coverage -->
 | Corpus | Documents | QA samples | Summary samples | Notes |
 |--------|-----------|------------|-----------------|-------|
@@ -528,11 +511,9 @@ The latest eval sweep (timestamped `eval/results/2025-11-22`) reran doc2dataset 
 | synthetic | 20 | 39 | 21 | Skips `icdar-2019.bbl` and `xml.png`; 1 summary/doc cap |
 | multi | 26 | 100 | 0 | QA-only aggregate with retry/backoff |
 <!-- END RESULTS-TABLE: corpus_coverage -->
-```
 
 Metrics, JSONL samples, and export sanity checks for this run live under `eval/results/2025-11-22/` for reproducibility after unpacking the corresponding evaluation archive from a GitHub Release.
 
-```markdown
 <!-- RESULTS-TABLE: token_savings -->
 | Corpus | Doc ID | Title | Baseline tokens (pdfminer) | `3dcf` decoder tokens | Serialized tokens | Decoder/serialized ratio |
 |--------|--------|-------|----------------------------|-----------------------|-------------------|--------------------------|
@@ -543,7 +524,6 @@ Metrics, JSONL samples, and export sanity checks for this run live under `eval/r
 | Technical | doc_0001 | API-TECH-SPEC_OpenAPI_NDR_version1p0 | 28,982 | 27,204 | 97,013 | 0.28 |
 | Technical | doc_0002 | NQA-ISO-27001-Implementation-Guide | 14,877 | 14,538 | 80,210 | 0.18 |
 <!-- END RESULTS-TABLE: token_savings -->
-```
 
 `tokens_raw` from `3dcf stats` reflects the decoded, macro-aware context, while
 `tokens_3dcf` counts the verbose serialized text (table sketches, coordinate hints).
@@ -559,14 +539,12 @@ literal overlap and fluency on the regenerated financial corpus. It is determini
 intentionally conservative—paraphrased answers still register as `0` faithfulness, so human
 spot checks remain part of the release checklist.
 
-```markdown
 <!-- RESULTS-TABLE: sample_quality_ci -->
 | Task | Samples | Avg faithfulness | Avg relevance | Avg fluency/length | Notes |
 |------|---------|-----------------|---------------|--------------------|-------|
 | QA (financial subset) | 20 | 0.000 | 0.361 | Fluency 1.00 | Span-overlap heuristic needs semantic matching; values computed on the freshly regenerated financial QA set. |
 | Summary (financial subset) | 13 | 0.611 | – | Avg length 160 tokens | Section-level overlap vs. source cells. |
 <!-- END RESULTS-TABLE: sample_quality_ci -->
-```
 
 These heuristics run quickly after every doc2dataset change, while the richer OpenAI-backed
 reruns above are batched when we intentionally refresh the corpora.
@@ -645,7 +623,6 @@ Ensure that multi-source ingest produces a coherent combined dataset without ove
 3. Run `doc2dataset run` with `sources: [srcA, srcB]` into `dataset_root_combined`.  
 4. Compare counts and IDs between A+B vs combined.
 
-```markdown
 <!-- RESULTS-TABLE: multi_ingest -->
 | Dataset | #Docs | #Pages | #Cells |
 |---------|-------|--------|--------|
@@ -654,7 +631,6 @@ Ensure that multi-source ingest produces a coherent combined dataset without ove
 | Technical | 2 | 60 | 10,628 |
 | Combined run (`doc2dataset run` w/ 3 sources) | 5 | 367 | 25,252 |
 <!-- END RESULTS-TABLE: multi_ingest -->
-```
 
 The combined dataset matches the sum of the three standalone ingests exactly,
 which confirms that repeated `ingest` passes append documents without clobbering
@@ -684,14 +660,12 @@ Configuration of LLM provider/model/language is done via environment (`DOC2DATAS
 
 Sample quality is measured via heuristic faithfulness/relevance plus fluency counts on small QA/Summary subsets.
 
-```markdown
 <!-- RESULTS-TABLE: sample_quality -->
 | Task | Samples | Faithfulness (heuristic) | Relevance (token overlap) | Fluency |
 |------|---------|--------------------------|---------------------------|---------|
 | QA   | 20      | 0.00*                    | 0.361                     | 1.00    |
 | Summary | 13   | 0.61                     | —                         | —       |
 <!-- END RESULTS-TABLE: sample_quality -->
-```
 
 *The heuristic still requires an exact answer substring inside the context; macro replies
 paraphrase the facts, so we log 0 even when the manual spot-check confirms correctness.
@@ -749,7 +723,6 @@ Verify that each export is:
 4. For HF datasets, attempt `datasets.load_dataset("json", data_files=...)`.  
 5. For LLaMA-Factory/Axolotl/OpenAI, run a small “dry run” training config (few steps) to ensure no runtime format errors.
 
-```markdown
 <!-- RESULTS-TABLE: export_checks -->
 | Export | Rows | Field check | Sample check | Load/dry-run |
 |--------|------|-------------|--------------|-------------|
@@ -760,7 +733,6 @@ Verify that each export is:
 | OpenAI finetune | 100 | ✅ | ✅ | ✅ |
 | RAG JSONL | 100 | ✅ | ✅ | ✅ |
 <!-- END RESULTS-TABLE: export_checks -->
-```
 
 All exporters now run for the 2025-11-22 snapshot; the `exports_eval.py` sweep confirms matching
 record counts, schema checks, semantic spot checks, and HF dataset loads for each target (`eval/results/2025-11-22/metrics/export_checks.json`).
@@ -801,7 +773,6 @@ Evaluate whether `exports/rag/train.jsonl` is useful for:
    - base LLM + naive retrieval vs base LLM + trained retriever,
    - compare answer quality (automatic + human evaluation).
 
-```markdown
 <!-- RESULTS-TABLE: rag_retrieval -->
 | Retriever | Recall@3 | MRR@3 |
 |-----------|----------|-------|
@@ -809,11 +780,9 @@ Evaluate whether `exports/rag/train.jsonl` is useful for:
 | CountVectorizer | 0.60 | 0.764 |
 | Random top-3 contexts | 0.00 | — |
 <!-- END RESULTS-TABLE: rag_retrieval -->
-```
 
 On the multi-domain held-out set, tf-idf achieves Recall@3 = 0.90 and MRR@3 = 0.972, outperforming the CountVectorizer baseline (Recall@3 = 0.60 / MRR@3 = 0.764). Random retrieval never hits the correct context.
 
-```markdown
 <!-- RESULTS-TABLE: rag_answers -->
 | Question | Similarity score vs gold answer |
 |----------|--------------------------------|
@@ -821,7 +790,6 @@ On the multi-domain held-out set, tf-idf achieves Recall@3 = 0.90 and MRR@3 = 0.
 | How are the terms SHOULD / SHOULD NOT / RECOMMENDED / NOT RECOMMENDED / MAY / OPTIONAL interpreted? | 0.519 |
 | **Average** | **0.746** |
 <!-- END RESULTS-TABLE: rag_answers -->
-```
 
 With the OpenAI key restored, the answer-quality check now runs alongside retrieval scoring and
 tracks both per-sample similarity and the aggregate average (0.746 in this sweep, see `eval/results/2025-11-22/metrics/rag_eval.json`).
