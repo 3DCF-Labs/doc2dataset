@@ -244,9 +244,9 @@ The index lives under `dataset_root/index/`:
   "page_number": 1,
   "approx_tokens": 512,
   "meta": {
-    "width": 595.0,
-    "height": 842.0,
-    "rotation": 0
+    "width_px": 595,
+    "height_px": 842,
+    "z": 0
   }
 }
 ```
@@ -258,19 +258,13 @@ The index lives under `dataset_root/index/`:
   "cell_id": "string",
   "doc_id": "string",
   "page_id": "string",
-  "kind": "text",             // text | heading | table | list | code | footer | ...
+  "kind": "text",             // text | heading | table | figure | footer
   "text": "string",
   "importance": 0.83,
-  "bbox": [0.12, 0.25, 0.90, 0.33],
-  "numguard": {
-    "numbers": [
-      { "value": "12.5", "hash": "4b2f..." }
-    ],
-    "ok": true
-  },
+  "bbox": [64.0, 128.0, 960.0, 152.0],  // pixel coordinates [x0, y0, x1, y1]
+  "numguard": null,           // stored separately in Document.numguards
   "meta": {
-    "heading_level": 2,
-    "section": "Limits by category"
+    "rle": 0
   }
 }
 ```
@@ -297,7 +291,7 @@ Design choices:
 - `kind` values capture what downstream tasks often care about:
   - `heading`: used to define sections,
   - `table`: often numerically heavy and important,
-  - `list`, `code`, `footer`, etc.
+  - `figure`, `footer`, etc.
 
 Heuristics for grouping and kind assignment are preset-specific and can be tuned per domain.
 
@@ -375,7 +369,7 @@ the bottleneck rather than 3DCF.
 
 ### 4.3 NumGuard: Numeric Integrity
 
-As introduced in Section 4.1.3, NumGuard records numeric values per cell and attaches a hash/checksum. To test integrity:
+NumGuard records are stored separately in the Document structure (not inline in each CellRecord). Each guard contains coordinates `(z, x, y)`, extracted units, and a SHA-1 hash of the numeric digits. To test integrity:
 
 - When 3DCF is re-encoded, or downstream transformations occur, NumGuard can be re-computed and compared.
 - For training datasets, NumGuard metadata can be propagated or used to filter examples where numeric values drift.
