@@ -948,8 +948,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "tempfile",
- "three_dcf_core",
- "three_dcf_index",
+ "three-dcf-core",
  "three_dcf_llm",
  "tokio",
  "toml 0.8.23",
@@ -3902,34 +3901,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "three_dcf_cli"
-version = "0.1.0"
-dependencies = [
- "age",
- "anyhow",
- "bincode",
- "clap 4.5.51",
- "glob",
- "hex",
- "rand 0.8.5",
- "rayon",
- "reqwest",
- "secrecy",
- "serde",
- "serde_json",
- "sha2",
- "thiserror 1.0.69",
- "three_dcf_core",
- "three_dcf_rag",
- "toml 0.8.23",
- "tracing",
- "tracing-subscriber",
- "walkdir",
-]
-
-[[package]]
-name = "three_dcf_core"
-version = "0.1.0"
+name = "three-dcf-core"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "base64 0.21.7",
@@ -3967,7 +3940,6 @@ dependencies = [
  "sysinfo",
  "tempfile",
  "thiserror 1.0.69",
- "three_dcf_index",
  "tiktoken-rs",
  "tracing",
  "tracing-subscriber",
@@ -3978,12 +3950,29 @@ dependencies = [
 ]
 
 [[package]]
-name = "three_dcf_index"
+name = "three_dcf_cli"
 version = "0.1.0"
 dependencies = [
+ "age",
  "anyhow",
+ "bincode",
+ "clap 4.5.51",
+ "glob",
+ "hex",
+ "rand 0.8.5",
+ "rayon",
+ "reqwest",
+ "secrecy",
  "serde",
  "serde_json",
+ "sha2",
+ "thiserror 1.0.69",
+ "three-dcf-core",
+ "three_dcf_rag",
+ "toml 0.8.23",
+ "tracing",
+ "tracing-subscriber",
+ "walkdir",
 ]
 
 [[package]]
@@ -4013,7 +4002,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 1.0.69",
- "three_dcf_core",
+ "three-dcf-core",
  "three_dcf_llm",
 ]
 
@@ -4027,7 +4016,7 @@ dependencies = [
  "serde_json",
  "tempfile",
  "thiserror 1.0.69",
- "three_dcf_core",
+ "three-dcf-core",
  "three_dcf_rag",
  "tokio",
  "toml 0.8.23",

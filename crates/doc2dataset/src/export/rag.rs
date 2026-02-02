@@ -4,7 +4,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
-use three_dcf_index::JsonlWriter;
+use three_dcf_core::index::JsonlWriter;
 
 use crate::model::{read_jsonl, RagSample};
 

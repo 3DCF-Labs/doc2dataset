@@ -5,7 +5,8 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 use serde_json::json;
-use three_dcf_index::{CellRecord as IndexCellRecord, DocumentRecord, JsonlWriter, PageRecord};
+
+use crate::index::{CellRecord as IndexCellRecord, DocumentRecord, JsonlWriter, PageRecord};
 
 use crate::{document::CellType, Document, Encoder};
 

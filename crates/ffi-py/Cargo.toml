@@ -13,4 +13,4 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = { version = "0.21", features = ["extension-module", "abi3-py38"] }
 thiserror = "1"
-three_dcf_core = { path = "../core" }
+three_dcf_core = { package = "three-dcf-core", path = "../core" }

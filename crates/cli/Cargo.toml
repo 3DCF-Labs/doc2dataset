@@ -4,7 +4,7 @@ edition.workspace = true
 version.workspace = true
 authors.workspace = true
 license.workspace = true
-publish.workspace = true
+publish = false
 
 [dependencies]
 anyhow.workspace = true
@@ -13,7 +13,7 @@ rand = "0.8"
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
-three_dcf_core = { path = "../core" }
+three_dcf_core = { package = "three-dcf-core", path = "../core" }
 toml.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true

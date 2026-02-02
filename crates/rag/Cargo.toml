@@ -11,7 +11,7 @@ anyhow.workspace = true
 thiserror.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-three_dcf_core = { path = "../core" }
+three_dcf_core = { package = "three-dcf-core", path = "../core" }
 three_dcf_llm = { path = "../llm" }
 reqwest = { version = "0.12", features = ["blocking", "json"] }
 rusqlite = { version = "0.31", features = ["bundled", "functions", "serde_json"] }

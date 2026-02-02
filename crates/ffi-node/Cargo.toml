@@ -14,7 +14,7 @@ name = "three_dcf_node"
 napi = { version = "2.16", default-features = false, features = ["napi4"] }
 napi-derive = "2.16"
 thiserror = "1"
-three_dcf_core = { path = "../core" }
+three_dcf_core = { package = "three-dcf-core", path = "../core" }
 
 [build-dependencies]
 napi-build = "1.3"

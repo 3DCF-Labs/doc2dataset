@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use anyhow::{anyhow, Context, Result};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
-use three_dcf_index::{CellRecord as IndexCellRecord, DocumentRecord};
+use three_dcf_core::index::{CellRecord as IndexCellRecord, DocumentRecord};
 
 #[derive(Debug, Clone, Copy)]
 pub enum SourceType {

@@ -4,7 +4,7 @@ use std::path::Path;
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use three_dcf_index::JsonlWriter;
+use three_dcf_core::index::JsonlWriter;
 
 use crate::model::{DatasetIndex, QaSample};
 
@@ -91,7 +91,7 @@ mod tests {
     use crate::model::DatasetIndex;
     use serde_json::json;
     use tempfile::tempdir;
-    use three_dcf_index::{CellRecord as IndexCellRecord, DocumentRecord};
+    use three_dcf_core::index::{CellRecord as IndexCellRecord, DocumentRecord};
 
     fn sample_index() -> DatasetIndex {
         let mut index = DatasetIndex::default();

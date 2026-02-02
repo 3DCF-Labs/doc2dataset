@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 
 use anyhow::{anyhow, Context, Result};
 use serde_json::json;
-use three_dcf_index::{CellRecord as IndexCellRecord, JsonlWriter};
+use three_dcf_core::index::{CellRecord as IndexCellRecord, JsonlWriter};
 use three_dcf_llm::{LlmClient, LlmRequest, LlmResponse};
 use tokio::runtime::Runtime;
 
@@ -522,7 +522,7 @@ mod tests {
     use crate::model::{QaSample, RagSample, SummarySample};
     use serde_json::json;
     use tempfile::tempdir;
-    use three_dcf_index::{CellRecord as IndexCellRecord, DocumentRecord};
+    use three_dcf_core::index::{CellRecord as IndexCellRecord, DocumentRecord};
     use three_dcf_llm::{LlmProvider, LlmResponse};
 
     #[test]

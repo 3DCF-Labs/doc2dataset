@@ -14,8 +14,7 @@ serde_json.workspace = true
 walkdir = "2"
 glob = "0.3"
 tokio = { version = "1", features = ["rt-multi-thread"] }
-three_dcf_core = { path = "../core" }
-three_dcf_index = { path = "../index" }
+three_dcf_core = { package = "three-dcf-core", path = "../core" }
 three_dcf_llm = { path = "../llm" }
 serde_yaml = "0.9"
 csv = "1"
