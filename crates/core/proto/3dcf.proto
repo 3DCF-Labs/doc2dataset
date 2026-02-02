@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package dcf.v1;
+
+message Header {
+  uint32 version = 1;
+  string grid = 2;
+  string codeset = 3;
+}
+
+message PageInfo {
+  uint32 z = 1;
+  uint32 width_px = 2;
+  uint32 height_px = 3;
+}
+
+enum CellType {
+  CELL_TYPE_TEXT = 0;
+  CELL_TYPE_TABLE = 1;
+  CELL_TYPE_FIGURE = 2;
+  CELL_TYPE_FOOTER = 3;
+  CELL_TYPE_HEADER = 4;
+}
+
+message Cell {
+  sint32 dz = 1;
+  sint32 dx = 2;
+  sint32 dy = 3;
+  uint32 w = 4;
+  uint32 h = 5;
+  bytes code_id = 6;
+  uint32 rle = 7;
+  CellType type = 8;
+  uint32 importance_q = 9;
+}
+
+message DictEntry {
+  bytes code_id = 1;
+  string payload_utf8 = 2;
+}
+
+message NumGuard {
+  uint32 z = 1;
+  uint32 x = 2;
+  uint32 y = 3;
+  string units = 4;
+  bytes sha1 = 5;
+}
+
+message Document {
+  Header header = 1;
+  repeated PageInfo pages = 2;
+  repeated Cell cells = 3;
+  repeated DictEntry dict = 4;
+  repeated NumGuard numguards = 5;
+}

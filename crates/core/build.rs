@@ -6,11 +6,7 @@ fn main() {
         std::env::set_var("PROTOC", path);
     }
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").expect("missing manifest dir"));
-    let workspace_root = manifest_dir
-        .parent()
-        .and_then(|p| p.parent())
-        .expect("workspace root");
-    let proto_dir = workspace_root.join("proto");
+    let proto_dir = manifest_dir.join("proto");
     let proto_file = proto_dir.join("3dcf.proto");
 
     println!("cargo:rerun-if-changed={}", proto_file.display());
