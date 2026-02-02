@@ -14,17 +14,19 @@ Before tagging a new version:
 6. Create a signed git tag `vX.Y.Z`, push, and draft the GitHub release notes using the entries below.
 
 ## [Unreleased]
+_Nothing yet_
+
+## [0.2.0] - 2026-02-02
 ### Added
-- Contributor docs: CODE_OF_CONDUCT, SECURITY policy, issue/PR templates, CHANGELOG skeleton.
-- README quickstart, “Why 3DCF?”, and sample end-to-end workflow.
-- CC0 sample dataset for CI smoke tests.
+- Published [`three-dcf-core`](https://crates.io/crates/three-dcf-core) with crate metadata, README, examples, index/prelude modules, and bundled proto files.
+- README instructions for consuming the core as a Rust library alongside CLI usage.
 
 ### Changed
-- macOS install guide documents PDFium download, Leptonica symlink, and Linux linker flags.
-- Cleaned repository artifacts (`.DS_Store`, nested `.git/`).
+- All workspace crates (doc2dataset, CLI, service, ffi targets) now depend on the published core crate name and import JSONL helpers from `three_dcf_core::index`.
+- Workspace layout documentation highlights the publishable core crate.
 
-### Fixed
-- Clarified bench → HTML workflow (`3dcf report`).
+### Removed
+- Deprecated `crates/index` package; its types are merged into `three_dcf_core::index`.
 
 ## [0.1.0] - 2024-01-01
 ### Added

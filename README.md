@@ -21,7 +21,8 @@ Open document layer and doc→dataset pipeline for LLMs, with NumGuard numeric i
 - **Token-efficient contexts** – macro-cell contexts are typically 3–6× smaller in tokens than naive pdfminer/Unstructured baselines on our micro-corpora, while maintaining or improving QA accuracy and numeric faithfulness (see Technical Report).
 - **doc→dataset tasks** – reusable `qa.jsonl`, `summary.jsonl`, and `rag.jsonl` samples with metrics for observability.
 - **Multi-framework exports** – ready-to-use datasets for HuggingFace (text/chat), LLaMA-Factory (Alpaca/ShareGPT), Axolotl (text/chat), OpenAI finetune (`messages` JSONL), and a generic RAG JSONL.
-- **Rust-native core + bindings** – CLI (`three_dcf_cli`) and HTTP service (`three_dcf_service`), plus Python (`three_dcf_py`) and Node (`three_dcf_node`) bindings for easy integration.
+- **Publishable Rust core** – the encoder/compression engine now ships as [`three-dcf-core`](https://crates.io/crates/three-dcf-core) with a documented API, prelude, JSONL helpers, and runnable examples.
+- **Rust-native tools + bindings** – CLI (`three_dcf_cli`) and HTTP service (`three_dcf_service`), plus Python (`three_dcf_py`) and Node (`three_dcf_node`) bindings for easy integration.
 
 ## Who is this for?
 
@@ -75,6 +76,42 @@ cargo install --path crates/doc2dataset --force
 doc2dataset --help
 ```
 
+### 4. Use as a Rust library
+
+The encoder/serializer is now published on crates.io:
+
+```toml
+[dependencies]
+three-dcf-core = "0.2"
+```
+
+```rust
+use three_dcf_core::prelude::*;
+
+fn main() -> Result<()> {
+    let encoder = Encoder::from_preset("reports")?;
+    let (document, metrics) = encoder.encode_path("./docs/report.pdf")?;
+    println!("pages={} cells={}", metrics.pages, metrics.cells_kept);
+
+    let serializer = TextSerializer::new();
+    std::fs::write("report.3dcf.txt", serializer.to_string(&document)?)?;
+
+    // Export a JSONL record
+    let mut writer = JsonlWriter::new(std::fs::File::create("documents.jsonl")?);
+    writer.write_record(&DocumentRecord {
+        doc_id: "report".into(),
+        source_type: "files".into(),
+        source_format: "pdf".into(),
+        source_ref: "./docs/report.pdf".into(),
+        title: Some("Quarterly report".into()),
+        tags: vec!["finance".into()],
+    })?;
+    Ok(())
+}
+```
+
+All JSONL helper types previously exposed via the internal `three_dcf_index` crate now live under `three_dcf_core::index`, and the `prelude` module provides convenient imports for common workflows.
+
 ## Layout
 
 ```text
@@ -82,11 +119,11 @@ doc2dataset --help
   Cargo.toml                # workspace definition
   proto/3dcf.proto          # Protobuf schema
   crates/
-    core/                   # encode/decode/serializer/stats/NumGuard
+    core/                   # encode/decode/serializer/stats/NumGuard (published as three-dcf-core)
     cli/                    # CLI (`three_dcf_cli` → `3dcf`)
     doc2dataset/            # doc→dataset pipeline (`doc2dataset`)
     service/                # HTTP service + UI
-    index/, llm/, rag/      # index/LLM/RAG helpers
+    llm/, rag/              # LLM helpers + RAG utilities
     ffi-node/, ffi-py/      # Node/Python bindings
   datasets/                 # sample corpora + README
   docs/                     # CLI/config/format guides
